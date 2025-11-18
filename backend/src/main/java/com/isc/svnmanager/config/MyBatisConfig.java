@@ -30,11 +30,13 @@ public class MyBatisConfig {
     public void registerEnumTypeHandlers() {
         TypeHandlerRegistry typeHandlerRegistry = sqlSessionFactory.getConfiguration().getTypeHandlerRegistry();
         
-        // 注册枚举类型处理器
+        // 注册UserRole专用类型处理器
         typeHandlerRegistry.register(
             com.isc.svnmanager.entity.enums.UserRole.class,
-            com.isc.svnmanager.config.handler.EnumTypeHandler.class
+            com.isc.svnmanager.config.handler.UserRoleTypeHandler.class
         );
+        
+        // 注册其他枚举类型处理器
         typeHandlerRegistry.register(
             com.isc.svnmanager.entity.enums.OperationType.class,
             com.isc.svnmanager.config.handler.EnumTypeHandler.class

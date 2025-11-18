@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import router from '../router';
 
 // 创建 axios 实例
 const api = axios.create({
@@ -9,7 +10,11 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
   config => {
-    // 可以在这里添加 token 等认证信息
+    // 从localStorage获取token并添加到请求头
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   error => {
@@ -22,8 +27,25 @@ api.interceptors.response.use(
   response => {
     return response.data;
   },
-  error => {
+  (error: AxiosError) => {
     // 统一错误处理
+    if (error.response) {
+      const status = error.response.status;
+      
+      // 401未授权，清除token并跳转到登录页
+      if (status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        router.push('/login');
+      }
+      
+      // 从响应中提取错误信息
+      const responseData = error.response.data as any;
+      const errorMessage = responseData?.message || error.message || '请求失败';
+      
+      return Promise.reject(new Error(errorMessage));
+    }
+    
     console.error('API Error:', error);
     return Promise.reject(error);
   },

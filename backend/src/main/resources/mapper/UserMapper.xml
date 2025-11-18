@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.isc.svnmanager.dao.UserMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="UserResultMap" type="User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="role" property="role" typeHandler="com.isc.svnmanager.config.handler.UserRoleTypeHandler"/>
+        <result column="password_reset_required" property="passwordResetRequired"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+    
+    <!-- 根据用户名查询用户 -->
+    <select id="findByUsername" resultMap="UserResultMap">
+        SELECT id, username, password, role, password_reset_required, created_at, updated_at
+        FROM users
+        WHERE username = #{username}
+    </select>
+    
+    <!-- 根据ID查询用户 -->
+    <select id="findById" resultMap="UserResultMap">
+        SELECT id, username, password, role, password_reset_required, created_at, updated_at
+        FROM users
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 更新用户密码 -->
+    <update id="updatePassword">
+        UPDATE users
+        SET password = #{password},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 更新密码重置标志 -->
+    <update id="updatePasswordResetRequired">
+        UPDATE users
+        SET password_reset_required = #{passwordResetRequired},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 统计用户总数 -->
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM users
+    </select>
+    
+    <!-- 创建用户 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, password, role, password_reset_required, created_at, updated_at)
+        VALUES (#{username}, #{password}, #{role, typeHandler=com.isc.svnmanager.config.handler.UserRoleTypeHandler}, #{passwordResetRequired}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    </insert>
+    
+</mapper>
+

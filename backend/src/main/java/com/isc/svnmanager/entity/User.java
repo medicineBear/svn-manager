@@ -34,9 +34,9 @@ public class User {
     
     /**
      * 密码（BCrypt加密后存储）
+     * 注意：在创建用户时，可以传入原始密码，createUser方法会自动加密
      */
     @NotBlank(message = "密码不能为空")
-    @Size(min = 60, max = 255, message = "密码必须是BCrypt哈希值")
     private String password;
     
     /**
