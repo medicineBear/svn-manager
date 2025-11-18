@@ -21,8 +21,7 @@
 - Spring Boot 2.7.x
 - MyBatis 3.5.x
 - SVNKit 1.10.x
-- SQLite 3.40+ (开发环境)
-- PostgreSQL 14+ (生产环境)
+- PostgreSQL 14+ (开发和生产环境，开发环境通过 Docker 运行)
 - Maven - 构建工具
 
 ## 项目结构
@@ -83,17 +82,30 @@ pnpm dev
 
 ### 后端开发
 
-1. 进入后端目录：
+1. **启动数据库服务**（首次运行或需要重置数据库时）：
+```bash
+# 在项目根目录执行
+docker-compose up -d
+
+# 初始化数据库结构（首次运行）
+# Windows PowerShell:
+Get-Content backend/src/main/resources/schema.sql | docker exec -i svnmanager-postgres psql -U svnmanager -d svnmanager
+
+# Linux/macOS (bash):
+# docker exec -i svnmanager-postgres psql -U svnmanager -d svnmanager < backend/src/main/resources/schema.sql
+```
+
+2. 进入后端目录：
 ```bash
 cd backend
 ```
 
-2. 安装依赖（Maven 会自动下载）：
+3. 安装依赖（Maven 会自动下载）：
 ```bash
 mvn install
 ```
 
-3. 启动应用：
+4. 启动应用：
 ```bash
 mvn spring-boot:run
 ```
@@ -117,7 +129,48 @@ VITE_API_BASE_URL=http://localhost:8080/api
 
 ### 后端环境变量
 
-开发环境默认使用 SQLite 数据库，数据库文件位于 `backend/data/svnmanager.db`。
+开发环境使用 PostgreSQL 数据库（通过 Docker Compose 运行）。
+
+**启动数据库服务：**
+
+```bash
+# 在项目根目录执行
+docker-compose up -d
+```
+
+数据库服务将在 `localhost:5432` 启动，默认配置：
+- 数据库名：`svnmanager`
+- 用户名：`svnmanager`
+- 密码：`svnmanager`
+
+可以通过环境变量覆盖默认配置（参考 `env.example` 文件）。
+
+**停止数据库服务：**
+
+```bash
+docker-compose down
+# 如需删除数据卷，使用：docker-compose down -v
+```
+
+**初始化数据库结构：**
+
+数据库启动后，需要执行初始化脚本创建表结构：
+
+**Windows PowerShell:**
+```powershell
+# 方法1：使用 Get-Content 和管道
+Get-Content backend/src/main/resources/schema.sql | docker exec -i svnmanager-postgres psql -U svnmanager -d svnmanager
+
+# 方法2：将文件复制到容器内执行
+docker cp backend/src/main/resources/schema.sql svnmanager-postgres:/tmp/schema.sql
+docker exec svnmanager-postgres psql -U svnmanager -d svnmanager -f /tmp/schema.sql
+```
+
+**Linux/macOS (bash):**
+```bash
+# 使用输入重定向
+docker exec -i svnmanager-postgres psql -U svnmanager -d svnmanager < backend/src/main/resources/schema.sql
+```
 
 生产环境使用 PostgreSQL，通过 `application-prod.yml` 配置。
 

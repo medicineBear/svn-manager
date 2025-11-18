@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: svnmanager-postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-svnmanager}
+      POSTGRES_USER: ${POSTGRES_USER:-svnmanager}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-svnmanager}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U svnmanager -d svnmanager']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped

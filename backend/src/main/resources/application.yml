@@ -4,17 +4,19 @@ spring:
   
   # 数据源配置
   datasource:
-    # 开发环境使用 SQLite
-    driver-class-name: org.sqlite.JDBC
-    url: jdbc:sqlite:./data/svnmanager.db
-    username: 
-    password: 
+    # 开发环境使用 PostgreSQL (Docker Compose)
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/svnmanager
+    username: ${DB_USERNAME:svnmanager}
+    password: ${DB_PASSWORD:svnmanager}
     
-    # 生产环境使用 PostgreSQL (通过 profile 激活)
-    # driver-class-name: org.postgresql.Driver
-    # url: jdbc:postgresql://localhost:5432/svnmanager
-    # username: ${DB_USERNAME:svnmanager}
-    # password: ${DB_PASSWORD:svnmanager}
+    # 连接池配置
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
   
   # MyBatis 配置
   sql:
@@ -28,6 +30,7 @@ spring:
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.isc.svnmanager.entity
+  type-handlers-package: com.isc.svnmanager.config.handler
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

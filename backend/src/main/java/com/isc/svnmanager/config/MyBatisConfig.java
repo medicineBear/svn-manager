@@ -1,6 +1,10 @@
 package com.isc.svnmanager.config;
 
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
 
 /**
  * MyBatis 配置类
@@ -12,7 +16,37 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class MyBatisConfig {
-    // MyBatis 配置通过 application.yml 完成
-    // Mapper 扫描已在主启动类中配置
+    
+    private final SqlSessionFactory sqlSessionFactory;
+    
+    public MyBatisConfig(SqlSessionFactory sqlSessionFactory) {
+        this.sqlSessionFactory = sqlSessionFactory;
+    }
+    
+    /**
+     * 注册枚举类型处理器
+     */
+    @PostConstruct
+    public void registerEnumTypeHandlers() {
+        TypeHandlerRegistry typeHandlerRegistry = sqlSessionFactory.getConfiguration().getTypeHandlerRegistry();
+        
+        // 注册枚举类型处理器
+        typeHandlerRegistry.register(
+            com.isc.svnmanager.entity.enums.UserRole.class,
+            com.isc.svnmanager.config.handler.EnumTypeHandler.class
+        );
+        typeHandlerRegistry.register(
+            com.isc.svnmanager.entity.enums.OperationType.class,
+            com.isc.svnmanager.config.handler.EnumTypeHandler.class
+        );
+        typeHandlerRegistry.register(
+            com.isc.svnmanager.entity.enums.OperationStatus.class,
+            com.isc.svnmanager.config.handler.EnumTypeHandler.class
+        );
+        typeHandlerRegistry.register(
+            com.isc.svnmanager.entity.enums.GroupStatus.class,
+            com.isc.svnmanager.config.handler.EnumTypeHandler.class
+        );
+    }
 }
 

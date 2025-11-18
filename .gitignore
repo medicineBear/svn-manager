@@ -34,6 +34,8 @@ logs/
 *.sqlite
 *.sqlite3
 backend/data/*.db
+# PostgreSQL 数据目录（Docker）
+data/postgres/
 
 # 临时文件
 *.tmp
