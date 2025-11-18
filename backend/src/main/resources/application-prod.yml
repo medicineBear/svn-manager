@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    # 生产环境使用 PostgreSQL
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:svnmanager}
+    username: ${DB_USERNAME:svnmanager}
+    password: ${DB_PASSWORD:svnmanager}
+
+logging:
+  level:
+    root: WARN
+    com.isc.svnmanager: INFO
+

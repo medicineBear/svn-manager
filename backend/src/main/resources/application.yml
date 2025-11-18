@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: svn-manager
+  
+  # 数据源配置
+  datasource:
+    # 开发环境使用 SQLite
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:./data/svnmanager.db
+    username: 
+    password: 
+    
+    # 生产环境使用 PostgreSQL (通过 profile 激活)
+    # driver-class-name: org.postgresql.Driver
+    # url: jdbc:postgresql://localhost:5432/svnmanager
+    # username: ${DB_USERNAME:svnmanager}
+    # password: ${DB_PASSWORD:svnmanager}
+  
+  # MyBatis 配置
+  sql:
+    init:
+      # 禁用自动初始化，数据库结构将在后续故事中创建
+      mode: never
+      # schema-locations: classpath:schema.sql
+      # data-locations: classpath:data.sql
+
+# MyBatis 配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.isc.svnmanager.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.isc.svnmanager: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
