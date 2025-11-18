@@ -35,7 +35,10 @@ export const useAuthStore = defineStore('auth', () => {
         if (response.data.user.passwordResetRequired) {
           router.push('/reset-password');
         } else {
-          router.push('/');
+          // 检查是否有保存的重定向路径
+          const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/';
+          sessionStorage.removeItem('redirectAfterLogin');
+          router.push(redirectPath);
         }
         
         return { success: true };
@@ -43,7 +46,20 @@ export const useAuthStore = defineStore('auth', () => {
         return { success: false, message: response.message || '登录失败' };
       }
     } catch (error: any) {
-      return { success: false, message: error.message || '登录失败' };
+      // 根据错误类型提供更具体的错误提示
+      let errorMessage = '登录失败';
+      if (error.message) {
+        if (error.message.includes('锁定')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('网络')) {
+          errorMessage = '网络连接失败，请检查网络后重试';
+        } else if (error.message.includes('超时')) {
+          errorMessage = '请求超时，请稍后重试';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      return { success: false, message: errorMessage };
     }
   }
 
@@ -102,7 +118,22 @@ export const useAuthStore = defineStore('auth', () => {
         return { success: false, message: response.message || '密码重置失败' };
       }
     } catch (error: any) {
-      return { success: false, message: error.message || '密码重置失败' };
+      // 根据错误类型提供更具体的错误提示
+      let errorMessage = '密码重置失败';
+      if (error.message) {
+        if (error.message.includes('频繁')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('不符合要求')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('网络')) {
+          errorMessage = '网络连接失败，请检查网络后重试';
+        } else if (error.message.includes('超时')) {
+          errorMessage = '请求超时，请稍后重试';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      return { success: false, message: errorMessage };
     }
   }
 
@@ -117,7 +148,10 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem('user', JSON.stringify(response.data));
       }
     } catch (error) {
-      console.error('获取用户信息失败:', error);
+      // 开发环境记录错误，生产环境静默处理
+      if (import.meta.env.DEV) {
+        console.error('获取用户信息失败:', error);
+      }
     }
   }
 

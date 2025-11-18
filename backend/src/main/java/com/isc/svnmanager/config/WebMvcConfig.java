@@ -3,8 +3,11 @@ package com.isc.svnmanager.config;
 import com.isc.svnmanager.interceptor.AuthenticationInterceptor;
 import com.isc.svnmanager.interceptor.RoleAuthorizationInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.CorsRegistration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -20,14 +23,38 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private RoleAuthorizationInterceptor roleAuthorizationInterceptor;
     
+    @Autowired
+    private Environment environment;
+    
+    @Value("${cors.allowed-origins:*}")
+    private String allowedOrigins;
+    
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOriginPatterns("*") // 开发环境允许所有来源，生产环境应指定具体域名
+        String[] activeProfiles = environment.getActiveProfiles();
+        boolean isProd = activeProfiles.length > 0 && 
+                        (activeProfiles[0].equals("prod") || activeProfiles[0].equals("production"));
+        
+        CorsRegistration corsRegistration = registry.addMapping("/**")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
+        
+        if (isProd) {
+            // 生产环境：只允许配置的域名
+            if (allowedOrigins != null && !allowedOrigins.equals("*")) {
+                String[] origins = allowedOrigins.split(",");
+                corsRegistration.allowedOrigins(origins);
+            } else {
+                // 生产环境未配置允许的域名，使用默认值并警告
+                System.err.println("警告：生产环境CORS配置未指定允许的域名，使用默认配置");
+                corsRegistration.allowedOriginPatterns("*");
+            }
+        } else {
+            // 开发环境：允许所有来源
+            corsRegistration.allowedOriginPatterns("*");
+        }
     }
     
     @Override

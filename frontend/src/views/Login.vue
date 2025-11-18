@@ -16,7 +16,13 @@
         />
       </div>
       
+      <!-- 加载骨架屏 -->
+      <div v-if="checkingInit" class="loading-skeleton">
+        <el-skeleton :rows="3" animated />
+      </div>
+      
       <el-form
+        v-else
         ref="loginFormRef"
         :model="loginForm"
         :rules="loginRules"
@@ -50,11 +56,10 @@
             type="primary"
             size="large"
             class="login-button"
-            :loading="loading || checkingInit"
-            :disabled="checkingInit"
+            :loading="loading"
             @click="handleLogin"
           >
-            {{ checkingInit ? '检查中...' : loading ? (needsInitialization ? '创建中...' : '登录中...') : (needsInitialization ? '创建管理员账户' : '登录') }}
+            {{ loading ? (needsInitialization ? '创建中...' : '登录中...') : (needsInitialization ? '创建管理员账户' : '登录') }}
           </el-button>
         </el-form-item>
       </el-form>
@@ -110,7 +115,12 @@ onMounted(async () => {
       needsInitialization.value = response.data === true;
     }
   } catch (error) {
-    console.error('检查初始化状态失败:', error);
+    // 开发环境记录错误
+    if (import.meta.env.DEV) {
+      console.error('检查初始化状态失败:', error);
+    }
+    // 发生错误时，假设需要初始化（允许用户尝试登录）
+    needsInitialization.value = false;
   } finally {
     checkingInit.value = false;
   }
@@ -193,6 +203,11 @@ const handleLogin = async () => {
 
 .error-message {
   margin-top: 16px;
+}
+
+.loading-skeleton {
+  margin-top: 32px;
+  padding: 20px 0;
 }
 
 :deep(.el-input__wrapper) {

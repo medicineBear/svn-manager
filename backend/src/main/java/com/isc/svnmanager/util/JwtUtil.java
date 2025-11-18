@@ -112,7 +112,23 @@ public class JwtUtil {
             Claims claims = getClaimsFromToken(token);
             Date expiration = claims.getExpiration();
             return expiration.after(new Date());
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            // Token已过期
+            return false;
+        } catch (io.jsonwebtoken.security.SignatureException e) {
+            // 签名验证失败
+            return false;
+        } catch (io.jsonwebtoken.MalformedJwtException e) {
+            // Token格式错误
+            return false;
+        } catch (io.jsonwebtoken.UnsupportedJwtException e) {
+            // 不支持的JWT格式
+            return false;
+        } catch (IllegalArgumentException e) {
+            // Token为空或null
+            return false;
         } catch (Exception e) {
+            // 其他异常
             return false;
         }
     }
@@ -128,8 +144,41 @@ public class JwtUtil {
             Claims claims = getClaimsFromToken(token);
             Date expiration = claims.getExpiration();
             return expiration.before(new Date());
-        } catch (Exception e) {
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            // Token已过期
             return true;
+        } catch (Exception e) {
+            // 其他异常，视为过期
+            return true;
+        }
+    }
+    
+    /**
+     * 验证Token并返回详细错误信息
+     *
+     * @param token JWT Token
+     * @return 验证结果，如果有效返回null，否则返回错误信息
+     */
+    public String validateTokenWithError(String token) {
+        try {
+            Claims claims = getClaimsFromToken(token);
+            Date expiration = claims.getExpiration();
+            if (expiration.before(new Date())) {
+                return "Token已过期";
+            }
+            return null; // 有效
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return "Token已过期";
+        } catch (io.jsonwebtoken.security.SignatureException e) {
+            return "Token签名验证失败";
+        } catch (io.jsonwebtoken.MalformedJwtException e) {
+            return "Token格式错误";
+        } catch (io.jsonwebtoken.UnsupportedJwtException e) {
+            return "不支持的JWT格式";
+        } catch (IllegalArgumentException e) {
+            return "Token为空";
+        } catch (Exception e) {
+            return "Token验证失败：" + e.getMessage();
         }
     }
 }

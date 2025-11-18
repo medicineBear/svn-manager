@@ -1,5 +1,6 @@
 package com.isc.svnmanager.dto.request;
 
+import com.isc.svnmanager.validation.PasswordMatch;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -9,6 +10,7 @@ import javax.validation.constraints.Size;
  * 密码重置请求DTO
  */
 @Data
+@PasswordMatch(message = "新密码和确认密码不一致")
 public class ResetPasswordRequest {
     
     /**

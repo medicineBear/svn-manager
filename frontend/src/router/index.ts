@@ -40,8 +40,11 @@ router.beforeEach((to, from, next) => {
   // 检查是否需要认证
   if (to.meta.requiresAuth) {
     if (!authStore.isAuthenticated) {
-      // 未登录，跳转到登录页
-      next({ name: 'Login', query: { redirect: to.fullPath } })
+      // 未登录，保存当前路径并跳转到登录页
+      if (to.path !== '/login') {
+        sessionStorage.setItem('redirectAfterLogin', to.fullPath)
+      }
+      next({ name: 'Login' })
     } else if (authStore.needsPasswordReset && to.name !== 'ResetPassword') {
       // 需要重置密码，跳转到密码重置页
       next({ name: 'ResetPassword' })
@@ -51,11 +54,13 @@ router.beforeEach((to, from, next) => {
   } else {
     // 公开路由
     if (to.name === 'Login' && authStore.isAuthenticated) {
-      // 已登录用户访问登录页，跳转到首页
+      // 已登录用户访问登录页，重定向到保存的路径或首页
+      const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/'
+      sessionStorage.removeItem('redirectAfterLogin')
       if (authStore.needsPasswordReset) {
         next({ name: 'ResetPassword' })
       } else {
-        next({ name: 'Home' })
+        next(redirectPath)
       }
     } else {
       next()
